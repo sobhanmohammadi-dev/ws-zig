@@ -10,9 +10,9 @@ const parse = @import("parse.zig");
 const sys = @import("sys.zig");
 const Vm = @import("vm.zig").Vm;
 
-/// Byte-for-byte the banner printed by the reference implementation.
+/// the banner
 const usage =
-    "wspace 0.2 (c) 2003 Edwin Brady\n" ++
+    "wspace 0.3 (c) 2003 Edwin Brady\n" ++
     "-------------------------------\n" ++
     "Usage: wspace [file]\n";
 
