@@ -101,7 +101,7 @@ fixed stack buffers.
 
 ## Platform layer
 
-`src/sys.zig` binds `read`, `write`, `openat` and `close` to Linux syscalls. `src/sys.zig` binds `read`, `write`, `openat` and `close` to Linux syscalls. Zig
+`src/sys.zig` binds `read`, `write`, `openat` and `close` to Linux syscalls. Zig
 0.17 routes portable I/O through `std.Io`, which brings in thread and event-loop
 machinery that a batch interpreter never uses; binding the four syscalls directly
 keeps the Linux binary at 28 KB and removes libc entirely.

@@ -142,6 +142,10 @@ Cross-platform `ReleaseSmall` builds from the same source:
 | `x86_64-windows` | 91,648 |
 | `aarch64-windows` | 39,424 |
 
+The native Linux build is 160 bytes larger than the baseline `x86_64-linux` cross
+build because `zig build` targets the host CPU while `-Dtarget` uses baseline
+x86-64.
+
 | Benchmark | Reference | This interpreter |
 | --- | --- | --- |
 | 2,000,000-iteration arithmetic loop | 582.9 ms | **62.2 ms** |
