@@ -1,0 +1,15 @@
+# Whitespace programs and recorded expectations must not be line-ending
+# converted: the interpreter's tokens are space, tab and line feed, and some
+# expectations contain carriage returns produced by the original programs.
+*.ws -text
+tests/expected/** -text
+tests/cases/*.in -text
+
+# Everything else is normal text with LF endings.
+* text=auto eol=lf
+*.zig text diff=zig
+*.asm text
+*.md text
+*.yml text
+*.sh text eol=lf
+Makefile text
