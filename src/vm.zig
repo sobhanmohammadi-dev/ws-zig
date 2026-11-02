@@ -307,18 +307,22 @@ pub const Vm = struct {
                 },
 
                 .read_char => {
+                    // The address comes from the stack; the value read goes
+                    // into the heap, it is not pushed.
+                    const address = try self.pop("read character");
                     const byte = self.input.readByte() orelse
                         return self.fail("end of file on input", .{});
-                    try self.push(byte);
+                    try self.heapStore(address, byte);
                 },
 
                 .read_num => {
+                    const address = try self.pop("read number");
                     const line = self.input.readLine(self.alloc, &self.line) catch
                         return self.fail("out of memory", .{});
                     const text = line orelse return self.fail("end of file on input", .{});
                     const value = inputNumber(text) orelse
                         return self.fail("invalid number on input ({s})", .{text});
-                    try self.push(value);
+                    try self.heapStore(address, value);
                 },
 
                 .end => return,
