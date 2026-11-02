@@ -1,0 +1,2 @@
+Input numbers are decimal only, unlike Haskell's `read`, so this case is only
+checked against the Zig interpreter.

@@ -1,0 +1,2 @@
+The reference implementation hangs on a negative heap address, so this case is
+only checked against the Zig interpreter.
