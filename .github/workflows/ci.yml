@@ -9,8 +9,8 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build and test (Linux x86_64)
+  linux:
+    name: Linux x86_64
     runs-on: ubuntu-latest
     steps:
       - name: Check out
@@ -38,7 +38,80 @@ jobs:
       - name: Conformance suite
         run: ./tests/run.sh check
 
-      - name: Report binary size
+      - name: Report binary
         run: |
-          stat -c '%s bytes' zig-out/bin/wspace
+          wc -c < zig-out/bin/wspace
           file zig-out/bin/wspace
+
+  macos:
+    name: macOS arm64
+    runs-on: macos-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Install Zig 0.17.0
+        run: |
+          curl -sSL -o zig.tar.xz https://ziglang.org/download/0.17.0/zig-aarch64-macos-0.17.0.tar.xz
+          tar xf zig.tar.xz
+          rm zig.tar.xz
+          echo "$PWD/zig-aarch64-macos-0.17.0" >> "$GITHUB_PATH"
+
+      - name: Show toolchain
+        run: zig version
+
+      - name: Check formatting
+        run: zig fmt --check build.zig src
+
+      - name: Unit tests
+        run: zig build test
+
+      - name: Release build
+        run: zig build -Doptimize=ReleaseSmall
+
+      - name: Conformance suite
+        run: ./tests/run.sh check
+
+      - name: Report binary
+        run: |
+          wc -c < zig-out/bin/wspace
+          file zig-out/bin/wspace
+
+  windows:
+    name: Windows x86_64
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Install Zig 0.17.0
+        run: |
+          curl -sSL -o zig.zip https://ziglang.org/download/0.17.0/zig-x86_64-windows-0.17.0.zip
+          unzip -q zig.zip
+          rm zig.zip
+          echo "$PWD/zig-x86_64-windows-0.17.0" >> "$GITHUB_PATH"
+
+      - name: Show toolchain
+        run: zig version
+
+      - name: Check formatting
+        run: zig fmt --check build.zig src
+
+      - name: Unit tests
+        run: zig build test
+
+      - name: Release build
+        run: zig build -Doptimize=ReleaseSmall
+
+      - name: Conformance suite
+        run: ./tests/run.sh check
+        env:
+          PYTHON: python
+
+      - name: Report binary
+        run: |
+          wc -c < zig-out/bin/wspace.exe
+          file zig-out/bin/wspace.exe
