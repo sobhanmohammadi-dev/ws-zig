@@ -1,14 +1,16 @@
 # Task runner. Run `make help` for the short list.
 ZIG ?= zig
 REFERENCE ?= /tmp/wspace-ref
+TARGETS ?= x86_64-linux aarch64-linux x86_64-macos aarch64-macos x86_64-windows aarch64-windows
 
-.PHONY: all build release help unit conformance differential fmt fmt-check test bench size clean
+.PHONY: all build release help unit conformance differential fmt fmt-check test bench size dist clean
 
 all: build
 
 help:
 	@echo "build         debug build"
-	@echo "release       ReleaseSmall build (shipped configuration)"
+	@echo "release       ReleaseSmall build for this machine (shipped configuration)"
+	@echo "dist          ReleaseSmall builds for every supported target (TARGETS=...)"
 	@echo "unit          decoder unit tests"
 	@echo "conformance   run the conformance suite"
 	@echo "differential  compare with the Haskell reference (REFERENCE=path)"
@@ -43,8 +45,19 @@ fmt-check:
 	$(ZIG) fmt --check build.zig src
 
 size: release
-	@stat -c '%s bytes  %n' zig-out/bin/wspace
+	@printf '%s bytes  %s\n' "$$(wc -c < zig-out/bin/wspace | tr -d ' ')" zig-out/bin/wspace
 	@file zig-out/bin/wspace
+
+dist:
+	@rm -rf dist
+	@for t in $(TARGETS); do \
+		printf 'building %s\n' "$$t"; \
+		$(ZIG) build -Doptimize=ReleaseSmall -Dtarget=$$t --prefix dist/$$t || exit 1; \
+	done
+	@echo "--- artifacts"
+	@for f in dist/*/bin/*; do \
+		printf '%-46s %8s bytes\n' "$$f" "$$(wc -c < "$$f" | tr -d ' ')"; \
+	done
 
 bench: release
 	@mkdir -p bench
@@ -52,4 +65,4 @@ bench: release
 	@for p in loop wide stack_small stack; do echo "--- $$p ---"; python3 bench/run.py ./zig-out/bin/wspace bench/$$p.ws 3; done
 
 clean:
-	rm -rf zig-out .zig-cache
+	rm -rf zig-out .zig-cache dist

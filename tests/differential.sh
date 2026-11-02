@@ -17,6 +17,7 @@ if [ "$#" -ne 2 ]; then
 fi
 
 root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+python=${PYTHON:-python3}
 a=$1
 b=$2
 
@@ -65,7 +66,7 @@ for asm in "$root"/tests/cases/*.asm; do
         skipped=$((skipped + 1))
         continue
     fi
-    python3 "$root/tests/assemble.py" "$asm" "$work/$name.ws" || exit 1
+    "$python" "$root/tests/assemble.py" "$asm" "$work/$name.ws" || exit 1
     input=/dev/null
     [ -f "$root/tests/cases/$name.in" ] && input="$root/tests/cases/$name.in"
     compare "$name" "$work/$name.ws" "$input"

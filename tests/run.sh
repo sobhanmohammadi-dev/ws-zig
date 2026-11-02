@@ -18,7 +18,14 @@ set -u
 root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 interpreter=${INTERPRETER:-"$root/zig-out/bin/wspace"}
 mode=${1:-check}
+python=${PYTHON:-python3}
 default_interpreter="$root/zig-out/bin/wspace"
+
+# Windows binaries carry an .exe suffix, including the default one.
+if [ ! -x "$interpreter" ] && [ -x "$interpreter.exe" ]; then
+    interpreter="$interpreter.exe"
+    [ "$interpreter" = "$default_interpreter.exe" ] && default_interpreter="$interpreter"
+fi
 
 case "$mode" in
     check | record | record-zig) ;;
@@ -108,7 +115,7 @@ for asm in "$root"/tests/cases/*.asm; do
         skipped=$((skipped + 1))
         continue
     fi
-    if ! python3 "$root/tests/assemble.py" "$asm" "$work/$name.ws"; then
+    if ! "$python" "$root/tests/assemble.py" "$asm" "$work/$name.ws"; then
         fail "$name (assembly)"
         continue
     fi
