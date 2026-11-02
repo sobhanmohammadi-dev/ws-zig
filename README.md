@@ -104,7 +104,7 @@ bundled examples.
 
 ```console
 $ zig build test                 # unit tests for the decoder
-$ ./tests/run.sh check           # conformance suite (36 cases, reference-recorded)
+$ ./tests/run.sh check           # 36 cases: 33 recorded from the reference, 3 deviations
 $ ./tests/differential.sh /path/to/haskell-wspace ./zig-out/bin/wspace
 ```
 
