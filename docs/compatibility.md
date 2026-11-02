@@ -89,6 +89,21 @@ Two further differences are observable only at the edges:
   rather than a decoded code point. For ASCII input, which is what Whitespace
   programs use in practice, behaviour is identical.
 
+## Platform notes
+
+The interpreter produces the same stdout bytes and exit codes on Linux, macOS and
+Windows; the conformance suite runs on all three in CI.
+
+- Linux uses raw syscalls; macOS uses libSystem; Windows uses the C runtime with
+  its standard streams switched to binary mode, so `\n` is never rewritten to
+  `\r\n`.
+- Program paths are transcoded to UTF-16 on Windows, so non-ASCII paths work.
+- Console output is written as UTF-8 bytes. A Windows console may render them
+  according to its active code page; redirecting to a file or pipe yields the
+  exact bytes the Unix builds produce.
+- `read character` returns a byte value, so multi-byte input is reported one byte
+  at a time on every platform.
+
 ## Exit status
 
 | Situation | Reference | This interpreter |

@@ -7,7 +7,9 @@ wspace FILE
 ```
 
 `wspace` accepts exactly one argument, a path to a Whitespace program, and runs
-it. This mirrors the reference interpreter, which also has no options.
+it. This mirrors the reference interpreter, which also has no options. On Windows
+the binary is `wspace.exe`; the command line and behaviour are otherwise
+identical.
 
 | Invocation | Behaviour | Exit status |
 | --- | --- | --- |

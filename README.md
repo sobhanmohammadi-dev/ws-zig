@@ -4,8 +4,9 @@ A complete, dependency-free reimplementation of the Whitespace v0.3 interpreter
 originally written in Haskell by Edwin Brady, rewritten from scratch in Zig with
 executable size, memory use and execution speed as first-class constraints.
 
-The final binary is **28 KB**, statically linked, stripped, and links against no
-C library and no third-party code.
+The final Linux binary is **28 KB**, statically linked, stripped, and links
+against no C library and no third-party code. The same source also builds for
+macOS and Windows.
 
 ```console
 $ zig build -Doptimize=ReleaseSmall
@@ -32,7 +33,9 @@ compatible with.
   errors that are only reported if execution reaches them.
 - Byte-identical stdout and identical exit codes to the reference across the
   whole test suite and all seven bundled example programs.
-- No dependencies. No libc. No runtime framework. One static binary.
+- No dependencies, no runtime framework, one static binary. The Linux build
+  links no libc at all.
+- Builds for Linux, macOS and Windows on x86-64 and ARM64 from one source.
 - Clean diagnostics instead of GHC runtime dumps, with exit code 1 on failure.
 - Iterative execution — no host-stack recursion, so deep Whitespace call stacks
   cannot overflow the process stack.
@@ -67,6 +70,9 @@ $ zig build -Doptimize=ReleaseSmall
 $ install -m 0755 zig-out/bin/wspace ~/.local/bin/wspace
 ```
 
+To build every supported target at once, run `make dist`; it writes the binaries
+and their sizes under `dist/`.
+
 ## Building
 
 ```console
@@ -74,6 +80,7 @@ $ zig build                                  # debug build
 $ zig build -Doptimize=ReleaseSafe            # safe build, used by the tests
 $ zig build -Doptimize=ReleaseSmall          # smallest release build
 $ zig build -Doptimize=ReleaseFast           # fastest release build
+$ make dist                                  # Linux, macOS and Windows builds
 $ zig build run -- program.ws                # build and run a program
 ```
 
@@ -119,10 +126,21 @@ Measured on Ubuntu 24.04, x86-64, Zig 0.17.0, median of three runs:
 
 | Binary | Size |
 | --- | --- |
-| `ReleaseSmall` (shipped configuration) | **28,112 bytes** |
-| `ReleaseFast` | 46,848 bytes |
-| `ReleaseSafe` | 233,680 bytes |
+| `ReleaseSmall` (shipped configuration) | **28,160 bytes** |
+| `ReleaseFast` | 46,784 bytes |
+| `ReleaseSafe` | 233,840 bytes |
 | Haskell reference (GHC 9.10.1, `-O`) | 2,772,608 bytes |
+
+Cross-platform `ReleaseSmall` builds from the same source:
+
+| Target | Bytes |
+| --- | --- |
+| `x86_64-linux` | 28,000 |
+| `aarch64-linux` | 27,472 |
+| `x86_64-macos` | 37,704 |
+| `aarch64-macos` | 68,568 |
+| `x86_64-windows` | 91,648 |
+| `aarch64-windows` | 39,424 |
 
 | Benchmark | Reference | This interpreter |
 | --- | --- | --- |

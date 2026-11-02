@@ -101,12 +101,17 @@ fixed stack buffers.
 
 ## Platform layer
 
-`src/sys.zig` binds `read`, `write`, `openat` and `close` to Linux syscalls. Zig
+`src/sys.zig` binds `read`, `write`, `openat` and `close` to Linux syscalls. `src/sys.zig` binds `read`, `write`, `openat` and `close` to Linux syscalls. Zig
 0.17 routes portable I/O through `std.Io`, which brings in thread and event-loop
 machinery that a batch interpreter never uses; binding the four syscalls directly
-keeps the binary at 28 KB and removes libc entirely. The trade-off is explicit:
-this version targets Linux only, and `sys.zig` fails to compile elsewhere with a
-clear message rather than pretending to support it.
+keeps the Linux binary at 28 KB and removes libc entirely.
+
+macOS and Windows need different plumbing: Darwin has no stable raw-syscall ABI,
+and the Windows C runtime is the only portable way to reach a console and a file.
+Those backends use libSystem and `_wopen`/`_read`/`_write`, selected at comptime,
+so neither costs the Linux build anything. Windows standard streams are switched
+to binary mode at startup so output bytes match the Unix builds. A target without
+a backend stops the build with an explicit message.
 
 ## Error handling
 

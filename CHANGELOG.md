@@ -4,6 +4,28 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-11-02
+
+Cross-platform release.
+
+### Added
+
+- macOS (x86-64, ARM64) and Windows (x86-64, ARM64) builds from the same source.
+  macOS I/O goes through libSystem and Windows through the C runtime, selected at
+  compile time; Linux keeps its raw syscall path and remains libc-free.
+- `make dist` builds all six targets into `dist/`.
+- Windows standard streams are set to binary mode, so output is byte-identical to
+  the Unix builds rather than CRLF translated.
+- Windows program paths are transcoded to UTF-16, so non-ASCII paths work.
+- CI matrix building and running the conformance suite on Linux, macOS and
+  Windows, plus a tag-triggered release workflow that publishes archives for all
+  six targets.
+
+### Changed
+
+- `src/sys.zig` rejects targets it has no backend for with an explicit compile
+  error instead of assuming Linux.
+
 ## [0.1.0] - 2026-11-02
 
 Initial release: a complete rewrite of the Whitespace v0.3 interpreter in Zig.
