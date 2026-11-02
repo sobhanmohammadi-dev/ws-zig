@@ -4,6 +4,10 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    // Linux needs no C library. Darwin's I/O goes through libSystem and the
+    // Windows build uses the C runtime, so both link libc.
+    const link_libc = target.result.os.tag == .macos or target.result.os.tag == .windows;
+
     const exe = b.addExecutable(.{
         .name = "wspace",
         .root_module = b.createModule(.{
@@ -12,7 +16,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
             .strip = true,
             .single_threaded = true,
-            .link_libc = false,
+            .link_libc = link_libc,
         }),
     });
     b.installArtifact(exe);

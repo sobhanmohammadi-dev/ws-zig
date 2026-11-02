@@ -5,6 +5,7 @@
 //! successfully. There are no options.
 
 const std = @import("std");
+const builtin = @import("builtin");
 const parse = @import("parse.zig");
 const sys = @import("sys.zig");
 const Vm = @import("vm.zig").Vm;
@@ -16,17 +17,18 @@ const usage =
     "Usage: wspace [file]\n";
 
 pub fn main(init: std.process.Init.Minimal) u8 {
-    const args = init.args.vector;
-    if (args.len != 2) {
-        sys.write(sys.stdout, usage);
-        return 0;
-    }
-
-    const path = std.mem.span(args[1]);
+    sys.init();
 
     var arena_state = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena_state.deinit();
     const arena = arena_state.allocator();
+
+    var raw_args: [2][]const u8 = undefined;
+    if (collectArgs(init, arena, &raw_args) != 2) {
+        sys.write(sys.stdout, usage);
+        return 0;
+    }
+    const path = raw_args[1];
 
     const source = readFile(arena, path) catch |err| {
         report(@errorName(err), path);
@@ -44,14 +46,36 @@ pub fn main(init: std.process.Init.Minimal) u8 {
     return 0;
 }
 
+/// Fills `out` with the first arguments and returns the true argument count, so
+/// too many arguments can be rejected. Unix passes NUL-terminated byte strings;
+/// Windows passes the raw WTF-16 command line, which needs the standard
+/// library's reimplementation of the C runtime parsing rules plus a transcode,
+/// so those slices are copied into the arena that outlives the iterator.
+fn collectArgs(init: std.process.Init.Minimal, arena: std.mem.Allocator, out: *[2][]const u8) usize {
+    if (builtin.os.tag == .windows) {
+        var it = std.process.Args.Iterator.initAllocator(init.args, arena) catch return 0;
+        defer it.deinit();
+        var count: usize = 0;
+        while (it.next()) |arg| : (count += 1) {
+            if (count < out.len) out[count] = arena.dupe(u8, arg) catch return count;
+        }
+        return count;
+    }
+
+    const vector = init.args.vector;
+    const copied = @min(vector.len, out.len);
+    for (0..copied) |i| out[i] = std.mem.span(vector[i]);
+    return vector.len;
+}
+
 fn readFile(alloc: std.mem.Allocator, path: []const u8) ![]const u8 {
-    const fd = try sys.openReadOnly(path);
-    defer sys.close(fd);
+    const file = try sys.openReadOnly(alloc, path);
+    defer sys.closeSource(file);
 
     var contents: std.ArrayList(u8) = .empty;
     var buf: [16384]u8 = undefined;
     while (true) {
-        const len = sys.read(fd, &buf);
+        const len = sys.readSource(file, &buf);
         if (len == 0) break;
         try contents.appendSlice(alloc, buf[0..len]);
     }
